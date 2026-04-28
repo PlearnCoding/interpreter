@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Breakpoints Interactive Tutorial</title>
+    <style>
+        /* --- CSS Reset & Base Styles --- */
+        :root {
+            --primary: #9d3bf5; /* สีม่วงหลัก */
+            --secondary: #e6c5fb; /* สีม่วงอ่อน */
+            --accent: #f06292; /* สีชมพู */
+            --bg: #f8f9fa;
+            --text: #333;
+            --header-bg: #ffe0b2; /* ส้ม */
+            --nav-bg: #c8e6c9; /* เขียว */
+            --aside-left-bg: #e1bee7; /* ม่วง */
+            --main-bg: #bbdefb; /* ฟ้า */
+            --aside-right-bg: #f48fb1; /* ชมพู */
+            --footer-bg: #ffcdd2; /* แดง */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* --- Main App Container --- */
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        /* --- Upper Controls (Header & Buttons) --- */
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .tutorial-text {
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            color: var(--text);
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Device Toggle Buttons */
+        .breakpoint-btns {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            background-color: var(--secondary);
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .btn span {
+            font-weight: normal;
+            font-size: 0.8em;
+            color: #777;
+        }
+
+        .btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn.active span {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Width Slider (Control Bar) */
+        .control-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .slider-wrapper {
+            flex-grow: 1;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        /* Live Width Indicator */
+        .current-width-label {
+            position: absolute;
+            top: -25px;
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            font-weight: bold;
+            pointer-events: none;
+            transition: left 0.1s linear; /* Smooth movement */
+        }
+
+        /* HTML5 Input Slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 12px;
+            cursor: pointer;
+            background: #eee;
+            border-radius: 6px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px; /* center it on track */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: scale 0.2s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            scale: 1.1;
+        }
+
+        .ruler {
+            display: flex;
+            justify-content: space-between;
+            color: #999;
+            font-size: 0.8em;
+            margin-top: 8px;
+        }
+
+        /* --- Interactive Preview Area (Mock Frame) --- */
+        .mock-frame-container {
+            border: 3px dotted var(--primary);
+            border-radius: 20px;
+            padding: 20px;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+            height: 600px; /* Fixed height for preview */
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The actual simulated window */
+        .mock-frame {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: width 0.1s linear; /* Smooth resizing */
+            overflow: hidden;
+            
+            /* Define CSS Grid for the layout blocks */
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            grid-template-areas: 
+                "header"
+                "nav"
+                "content"
+                "footer";
+        }
+
+        /* Layout Blocks styling */
+        .mock-block {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .mock-header { grid-area: header; background-color: var(--header-bg); height: 60px; }
+        .mock-nav { grid-area: nav; background-color: var(--nav-bg); height: 50px; }
+        .mock-aside-left { grid-area: aside-left; background-color: var(--aside-left-bg); }
+        .mock-main { grid-area: main; background-color: var(--main-bg); min-height: 300px; }
+        .mock-aside-right { grid-area: aside-right; background-color: var(--aside-right-bg); }
+        .mock-footer { grid-area: footer; background-color: var(--footer-bg); height: 50px; }
+
+        /* Asides are hidden initially */
+        .mock-aside-left, .mock-aside-right { display: none; }
+
+        /* --- Breakpoint Logic (Applying Reflow) --- */
+
+        /* 1. Tablet (>= 480px) */
+        @media (min-width: 480px) {
+            .btn-tablet { background-color: var(--primary) !important; color: white !important; }
+            
+            .mock-frame {
+                grid-template-areas: 
+                    "header header"
+                    "nav nav"
+                    "aside-left main"
+                    "footer footer";
+                grid-template-columns: 200px 1fr;
+            }
+            .mock-aside-left { display: flex; }
+        }
+
+        /* 2. Laptop (>= 768px) */
+        @media (min-width: 768px) {
+            .btn-laptop { background-color: var(--primary) !important; color: white !important; }
+            /* Laptop can expand from Tablet, maybe wider aside */
+            .mock-frame {
+                grid-template-columns: 250px 1fr;
+            }
+        }
+
+        /* 3. Desktop (>= 1024px) */
+        @media (min-width: 1024px) {
+            .btn-desktop { background-color: var(--primary) !important; color: white !important; }
+            .mock-frame {
+                grid-template-areas: 
+                    "header header header"
+                    "nav nav nav"
+                    "aside-left main aside-right"
+                    "footer footer footer";
+                grid-template-columns: 250px 1fr 250px;
+            }
+            .mock-aside-right { display: flex; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="app-header">
+            <div class="tutorial-text">CSS INTERACTIVE TUTORIAL</div>
+            <h1>Responsive <span>Breakpoints</span></h1>
+            <p class="subtitle">Drag to resize · watch the layout reflow</p>
+        </header>
+
+        <div class="breakpoint-btns">
+            <button class="btn btn-mobile active" id="btn-mobile">MOBILE <span>< 480px</span></button>
+            <button class="btn btn-tablet" id="btn-tablet">TABLET <span>>= 480px</span></button>
+            <button class="btn btn-laptop" id="btn-laptop">LAPTOP <span>>= 768px</span></button>
+            <button class="btn btn-desktop" id="btn-desktop">DESKTOP <span>>= 1024px</span></button>
+        </div>
+
+        <div class="control-bar">
+            0px
+            <div class="slider-wrapper">
+                <input type="range" id="widthSlider" min="320" max="1400" value="352">
+                <div class="current-width-label" id="widthLabel">352px</div>
+                <div class="ruler">
+                    <span>320px</span>
+                    <span style="margin-left: 20%">480px</span>
+                    <span style="margin-left: 17%">768px</span>
+                    <span style="margin-left: 13%">1024px</span>
+                    <span>1400px</span>
+                </div>
+            </div>
+            1400px
+        </div>
+
+        <div class="mock-frame-container" id="mockContainer">
+            <div class="mock-frame" id="mockFrame" style="width: 352px;">
+                <div class="mock-block mock-header">HEADER</div>
+                <div class="mock-block mock-nav">NAV</div>
+                <div class="mock-block mock-aside-left">ASIDE LEFT</div>
+                <div class="mock-block mock-main">MAIN</div>
+                <div class="mock-block mock-aside-right">ASIDE RIGHT</div>
+                <div class="mock-block mock-footer">FOOTER</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- JavaScript for Interaction ---
+        const slider = document.getElementById('widthSlider');
+        const frame = document.getElementById('mockFrame');
+        const label = document.getElementById('widthLabel');
+        const btns = document.querySelectorAll('.btn');
+
+        // Breakpoint values
+        const BREAKPOINTS = {
+            tablet: 480,
+            laptop: 768,
+            desktop: 1024
+        };
+
+        // Function to update the frame width and UI elements
+        function updateLayout() {
+            const width = slider.value;
+            
+            // 1. Update the actual simulated frame width
+            frame.style.width = width + 'px';
+            
+            // 2. Update the live text label and move it with the thumb
+            label.textContent = width + 'px';
+            const percent = (width - slider.min) / (slider.max - slider.min);
+            const offset = (percent * slider.offsetWidth) - (label.offsetWidth / 2);
+            label.style.left = `calc(${percent * 100}% - ${label.offsetWidth / 2}px + 20px)`; 
+            // the +20px accounts for the padding of slider-wrapper
+
+            // 3. Update active state of buttons based on width
+            btns.forEach(btn => btn.classList.remove('active'));
+
+            if (width < BREAKPOINTS.tablet) {
+                document.getElementById('btn-mobile').classList.add('active');
+            } else if (width >= BREAKPOINTS.tablet && width < BREAKPOINTS.laptop) {
+                document.getElementById('btn-tablet').classList.add('active');
+            } else if (width >= BREAKPOINTS.laptop && width < BREAKPOINTS.desktop) {
+                document.getElementById('btn-laptop').classList.add('active');
+            } else {
+                document.getElementById('btn-desktop').classList.add('active');
+            }
+        }
+
+        // Add event listener to the slider for real-time updates
+        slider.addEventListener('input', updateLayout);
+
+        // Initial call to set the view correctly on load
+        updateLayout();
+
+    </script>
+</body>
+</html>
